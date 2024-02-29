@@ -12,8 +12,8 @@ from typing import get_args, get_origin
 import pydantic
 from pydantic import BaseModel
 
-from .constants import (MAP_AVRO_LOGICAL_TYPE_TO_AVRO_DATA_TYPE, AvroDataTypes,
-                        AvroLogicalTypes, TimePrecision)
+from .enums import (MAP_AVRO_LOGICAL_TYPE_TO_AVRO_DATA_TYPE, AvroDataTypes,
+                    AvroLogicalTypes, TimePrecision)
 from .exceptions import (InvalidEnumMemeberException,
                          NotAnAvroLogicalDataTypeException,
                          NotAnAvroPrimitiveDataTypeException,
@@ -35,7 +35,7 @@ def get_avro_equivalent_type_for(
             type_, schema_options=schema_options
         )
     else:
-        return AvroTypeExpert.get_avro_complex_type_equivalent(
+        return AvroTypeExpert.get_avro_complex_type_equivalent_for(
             type_, namespace=namespace, schema_options=schema_options, dp=dp
         )
 
@@ -133,7 +133,7 @@ class AvroTypeExpert:
         )
 
     @staticmethod
-    def get_avro_complex_type_equivalent(
+    def get_avro_complex_type_equivalent_for(
         type_: type,
         namespace: str | None,
         schema_options: SchemaOptions,

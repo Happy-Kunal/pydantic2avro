@@ -1,7 +1,7 @@
 from pydantic import BaseModel, Field
 from pydantic import model_validator
 
-from .constants import TimePrecision
+from .enums import TimePrecision
 
 
 class DecimalOptions(BaseModel):

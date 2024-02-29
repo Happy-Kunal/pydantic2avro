@@ -1,0 +1,29 @@
+[tool.poetry]
+name = "pydantic2avro"
+version = "0.1.2"
+description = "Generate Apache Avro schemas for Pydantic data models."
+authors = ["Kunal Sharma <happykunal@proton.me>"]
+license = "MIT"
+readme = "README.md"
+
+keywords = ["pydantic", "avro", "kafka", "messaging", "schema", "serialization", "python"]
+homepage = "https://github.com/Happy-Kunal/pydantic2avro"
+repository = "https://github.com/Happy-Kunal/pydantic2avro"
+include = ["LICENSE"]
+
+
+[tool.poetry.dependencies]
+python = "^3.12"
+pydantic = "^2.6.3"
+
+[tool.poetry.group.dev.dependencies]
+fastavro = "^1.9.4"
+pytest = "^8.0.2"
+pytest-cov = "^4.1.0"
+
+[tool.pytest.ini_options]
+pythonpath = "src/"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

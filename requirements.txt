@@ -1,6 +1,0 @@
-pydantic
-fastavro
-
-# for testing
-pytest
-pytest-cov
