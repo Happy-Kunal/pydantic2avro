@@ -8,7 +8,7 @@ from pydantic import BaseModel, Field
 from pydantic2avro import PydanticToAvroSchemaMaker
 from pydantic2avro import SchemaOptions, DecimalOptions
 
-from .utils import validate_avro_schema
+from ..utils import validate_avro_schema
 
 
 class GenderType(str, Enum):
@@ -38,7 +38,7 @@ def test_ptasm_simple() -> None:
         paid: bool
 
 
-    records = [
+    hotel_bill_records = [
         SimpleHotelBill(
             customer_name="hello",
             ordered_cnt=2,
@@ -59,7 +59,7 @@ def test_ptasm_simple() -> None:
     pprint(schema)
     print()
     
-    records = [record.model_dump() for record in records]
+    records = [record.model_dump() for record in hotel_bill_records]
 
     validate_avro_schema(schema=schema, records=records)
 

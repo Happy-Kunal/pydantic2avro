@@ -10,7 +10,7 @@ from pydantic import BaseModel, Field
 from pydantic2avro import PydanticToAvroSchemaMaker
 from pydantic2avro import SchemaOptions, DecimalOptions
 
-from .utils import validate_avro_schema
+from ..utils import validate_avro_schema
 
 
 class DiscountOffers(str, Enum):

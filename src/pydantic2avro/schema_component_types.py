@@ -1,1 +1,7 @@
-type AvroSchemaComponent = dict[str, str | AvroSchemaComponent | list[AvroSchemaComponent]]
+from typing import Union
+
+AvroSchemaComponent = Union[
+    str,
+    list["AvroSchemaComponent"],
+    dict[str, Union[int, "AvroSchemaComponent"]]
+]

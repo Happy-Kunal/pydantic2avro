@@ -7,7 +7,7 @@ import types
 import uuid
 from enum import Enum
 from functools import partial
-from typing import get_args, get_origin
+from typing import get_args, get_origin, Type
 
 import pydantic
 from pydantic import BaseModel
@@ -26,7 +26,7 @@ def get_avro_equivalent_type_for(
     type_: type,
     namespace: str | None,
     schema_options: SchemaOptions,
-    dp: dict[type, str],
+    dp: dict[Type[Enum] | Type[BaseModel], str],
 ) -> str | AvroSchemaComponent:
     if AvroTypeExpert.has_avro_primitive_type_equivalent_for(type_):
         return AvroTypeExpert.get_avro_primitive_type_equivalent_for(type_).value
@@ -34,6 +34,8 @@ def get_avro_equivalent_type_for(
         return AvroTypeExpert.get_avro_logical_type_equivalent_for(
             type_, schema_options=schema_options
         )
+    elif AvroTypeExpert.type_in_pydantic_networks_field(type_):
+        return AvroTypeExpert.get_avro_equivaluent_for_pydantic_networks_field(type_)
     else:
         return AvroTypeExpert.get_avro_complex_type_equivalent_for(
             type_, namespace=namespace, schema_options=schema_options, dp=dp
@@ -56,6 +58,14 @@ class AvroTypeExpert:
             datetime.timedelta,
             pydantic.AwareDatetime,
             pydantic.NaiveDatetime,
+        )
+    
+
+    @staticmethod
+    def type_in_pydantic_networks_field(type_: type):
+        return (
+            type(type_) is not types.UnionType
+            and type_.__name__ in pydantic.networks.__all__
         )
 
     @staticmethod
@@ -131,17 +141,24 @@ class AvroTypeExpert:
             logicalType=logical_type.value,
             **other_fields,
         )
+    
+    @staticmethod
+    def get_avro_equivaluent_for_pydantic_networks_field(type_: type):
+        return dict(
+            type=AvroDataTypes.STRING,
+            __pydantic_class=type_.__name__
+        )
 
     @staticmethod
     def get_avro_complex_type_equivalent_for(
         type_: type,
         namespace: str | None,
         schema_options: SchemaOptions,
-        dp: dict[type, str],
+        dp: dict[Type[Enum] | Type[BaseModel], str],
     ) -> AvroSchemaComponent:
 
         if type_ in dp:
-            return dp.get(type_)
+            return dp[type_]
         elif inspect.isclass(type_):
             dp[type_] = f"{namespace}.{type_.__name__}" if namespace else type_.__name__
 
@@ -204,17 +221,18 @@ class AvroTypeExpert:
 
             case _:
                 raise UnsupportedTypeException(f"{type_} is unsupported")
+                        
 
 
 class PydanticToAvroSchemaMaker:
     def __init__(
         self,
-        pydantic_model: BaseModel,
+        pydantic_model: Type[BaseModel],
         *,
         namespace: str | None = None,
         schema_name: str | None = None,
         schema_options: SchemaOptions = SchemaOptions(),
-        dp: dict[type, str] | None = None,
+        dp: dict[Type[Enum] | Type[BaseModel], str] | None = None,
     ) -> None:
 
         if not issubclass(pydantic_model, BaseModel):
@@ -222,7 +240,7 @@ class PydanticToAvroSchemaMaker:
 
         schema_name = schema_name or pydantic_model.__name__
 
-        self.pydantic_model: BaseModel = pydantic_model
+        self.pydantic_model = pydantic_model
         self.namespace = namespace
         self.schema_name = (
             f"{namespace}.{schema_name}"
@@ -231,7 +249,7 @@ class PydanticToAvroSchemaMaker:
         )
         self.schema_options = schema_options
         self._schema = dict(name=self.schema_name, type="record", fields=list())
-        self.dp: dict[type, str] = dp or dict()
+        self.dp: dict[Type[Enum] | Type[BaseModel], str] = dp or dict()
 
         self.dp.update({self.pydantic_model: self.schema_name})
 

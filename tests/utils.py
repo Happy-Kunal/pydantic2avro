@@ -1,5 +1,6 @@
 import json
 from io import BytesIO
+from pprint import pprint
 
 import fastavro
 
@@ -9,10 +10,7 @@ def validate_avro_schema(schema: str | dict, records: list) -> None:
     if isinstance(schema, str):
         schema = json.loads(schema)
 
-    # schema = fastavro.parse_schema(schema)
-    #schema = fastavro.parse_schema(schema)
-    from fastavro import _schema_py
-    schema = _schema_py.parse_schema(schema=schema)
+    schema = fastavro.parse_schema(schema) #type: ignore
 
     fobj = BytesIO()
     fastavro.writer(fobj, schema=schema, records=records)
@@ -25,8 +23,9 @@ def validate_avro_schema(schema: str | dict, records: list) -> None:
 
     for record in fastavro.reader(fobj):
         if (record not in records):
-            print(f"{record} not present in {records}")
-            raise ValueError(f"{record} not present in {records}")
+            print(f"record not present in records: ")
+            pprint(record)
+            raise ValueError("record not present in records")
         else:
             records.remove(record)
     

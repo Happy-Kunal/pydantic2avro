@@ -1,5 +1,5 @@
 # pydantic2avro
-Generate Apache Avro schemas for Pydantic data models. 
+Generate Apache Avro schemas from Pydantic data models. 
 
 
 ### Install
@@ -61,3 +61,16 @@ $ coverage run -m pytest  # with coverage
 $ poetry run pytest
 $ poetry run coverage run -m pytest  # with coverage
 ```
+
+### Features
+- [x] Primitive types: int, long, double, float, boolean, string and null support
+- [x] Complex types: enum, array, map, fixed, unions and records support
+- [x] Logical Types: date, duration, time (millis and micro), datetime (millis and micro), uuid support
+- [x] Recursive Schemas
+- [x] Generate json from pydantic class instance
+
+
+
+### TODO:
+- [ ] write better tests.
+- [ ] increase test coverage from 92% to atleast 99%.

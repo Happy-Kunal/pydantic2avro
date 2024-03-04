@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pydantic2avro"
-version = "0.1.2"
+version = "0.2.0"
 description = "Generate Apache Avro schemas for Pydantic data models."
 authors = ["Kunal Sharma <happykunal@proton.me>"]
 license = "MIT"
@@ -14,12 +14,13 @@ include = ["LICENSE"]
 
 [tool.poetry.dependencies]
 python = "^3.12"
-pydantic = "^2.6.3"
+pydantic = {extras = ["email"], version = "^2.6.3"}
 
 [tool.poetry.group.dev.dependencies]
 fastavro = "^1.9.4"
 pytest = "^8.0.2"
 pytest-cov = "^4.1.0"
+mypy = "^1.8.0"
 
 [tool.pytest.ini_options]
 pythonpath = "src/"
