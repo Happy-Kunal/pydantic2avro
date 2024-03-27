@@ -4,10 +4,11 @@ import decimal
 import inspect
 import json
 import types
+import typing
 import uuid
 from enum import Enum
 from functools import partial
-from typing import get_args, get_origin, Type
+from typing import Type, get_args, get_origin
 
 import pydantic
 from pydantic import BaseModel
@@ -15,6 +16,7 @@ from pydantic import BaseModel
 from .enums import (MAP_AVRO_LOGICAL_TYPE_TO_AVRO_DATA_TYPE, AvroDataTypes,
                     AvroLogicalTypes, TimePrecision)
 from .exceptions import (InvalidEnumMemeberException,
+                         InvalidLiteralMemeberException,
                          NotAnAvroLogicalDataTypeException,
                          NotAnAvroPrimitiveDataTypeException,
                          NotAPydanticModelException, UnsupportedTypeException)
@@ -25,20 +27,29 @@ from .schema_options import SchemaOptions
 def get_avro_equivalent_type_for(
     type_: type,
     namespace: str | None,
+    fieldname: str | None,
     schema_options: SchemaOptions,
     dp: dict[Type[Enum] | Type[BaseModel], str],
 ) -> str | AvroSchemaComponent:
     if AvroTypeExpert.has_avro_primitive_type_equivalent_for(type_):
         return AvroTypeExpert.get_avro_primitive_type_equivalent_for(type_).value
+    
     elif AvroTypeExpert.has_avro_logical_type_equivalent_for(type_):
         return AvroTypeExpert.get_avro_logical_type_equivalent_for(
-            type_, schema_options=schema_options
+            type_,
+            schema_options=schema_options
         )
+    
     elif AvroTypeExpert.type_in_pydantic_networks_field(type_):
         return AvroTypeExpert.get_avro_equivaluent_for_pydantic_networks_field(type_)
+    
     else:
         return AvroTypeExpert.get_avro_complex_type_equivalent_for(
-            type_, namespace=namespace, schema_options=schema_options, dp=dp
+            type_,
+            namespace=namespace,
+            fieldname=fieldname,
+            schema_options=schema_options,
+            dp=dp
         )
 
 
@@ -153,6 +164,7 @@ class AvroTypeExpert:
     def get_avro_complex_type_equivalent_for(
         type_: type,
         namespace: str | None,
+        fieldname: str | None,
         schema_options: SchemaOptions,
         dp: dict[Type[Enum] | Type[BaseModel], str],
     ) -> AvroSchemaComponent:
@@ -188,6 +200,7 @@ class AvroTypeExpert:
         partial_get_avro_equivalent_type_for = partial(
             get_avro_equivalent_type_for,
             namespace=namespace,
+            fieldname=fieldname,
             schema_options=schema_options,
             dp=dp,
         )
@@ -218,6 +231,22 @@ class AvroTypeExpert:
                     )
 
                 return union_schema
+            
+            case typing.Literal:
+                for literal_member in get_args(type_):
+                    if not isinstance(literal_member, str):  # TODO: add regex check
+                        raise InvalidLiteralMemeberException(
+                            f"In pydantic2avro python's `Literal` are "
+                            f"coerced to Enums. since, "
+                            f"Avro only allow strings to be value of Enums' "
+                            f"members' value. ({type_} does not follow this)"
+                        )
+
+                return dict(
+                    name=f"{namespace}.{fieldname}" if namespace else fieldname,
+                    type=AvroDataTypes.ENUM.value,
+                    symbols=[member for member in get_args(type_)],
+                )
 
             case _:
                 raise UnsupportedTypeException(f"{type_} is unsupported")
@@ -259,15 +288,16 @@ class PydanticToAvroSchemaMaker:
 
         for fieldname, fieldinfo in self.pydantic_model.model_fields.items():
             curr = dict(name=fieldname)
-            field_type = fieldinfo.annotation
+            fieldtype = fieldinfo.annotation
 
-            if field_type in self.dp:
-                curr.update(type=self.dp.get(field_type))
+            if fieldtype in self.dp:
+                curr.update(type=self.dp.get(fieldtype))
             else:
                 curr.update(
                     type=get_avro_equivalent_type_for(
-                        field_type,
+                        fieldtype,
                         namespace=self.namespace,
+                        fieldname=fieldname,
                         schema_options=self.schema_options,
                         dp=self.dp,
                     )

@@ -1,18 +1,10 @@
 from __future__ import annotations
 
-from enum import Enum
-from uuid import UUID, uuid4
-from datetime import date
-from decimal import Decimal
-
-from pydantic import BaseModel, Field, EmailStr
+from pydantic import BaseModel, EmailStr
 
 from pydantic2avro import PydanticToAvroSchemaMaker
-from pydantic2avro import SchemaOptions, DecimalOptions
 
 from ..utils import validate_avro_schema
-
-
 
 
 def test_email() -> None:

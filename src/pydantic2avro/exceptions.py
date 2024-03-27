@@ -12,3 +12,6 @@ class UnsupportedTypeException(Exception):
 
 class InvalidEnumMemeberException(Exception):
     pass
+
+class InvalidLiteralMemeberException(Exception):
+    pass
