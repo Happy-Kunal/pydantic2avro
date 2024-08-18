@@ -12,6 +12,7 @@ from typing import Type, get_args, get_origin
 
 import pydantic
 from pydantic import BaseModel
+import pydantic.networks
 
 from .enums import (MAP_AVRO_LOGICAL_TYPE_TO_AVRO_DATA_TYPE, AvroDataTypes,
                     AvroLogicalTypes, TimePrecision)

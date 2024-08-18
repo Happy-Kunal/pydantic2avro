@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pydantic2avro"
-version = "0.4.0"
+version = "0.4.1"
 description = "Generate Apache Avro schemas for Pydantic data models."
 authors = ["Kunal Sharma <happykunal@proton.me>"]
 license = "MIT"
